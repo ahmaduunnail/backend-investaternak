@@ -1,0 +1,224 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["fullTextIndex", "fullTextSearch"]
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String      @id @default(cuid())
+  username        String      @unique
+  password        String
+  name            String?
+  imageProfileUrl String?
+  role            Role        @default(USERS)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  Community       Community[]
+  LiveChat        LiveChat[]
+  Message         Message[]
+  Profile         Profile?
+
+  @@fulltext([username, password, name])
+  @@map("user")
+}
+
+model Profile {
+  id          String        @id @default(cuid())
+  email       String        @unique
+  nik         String        @unique
+  address     String?
+  job         String?
+  point       Int?
+  userId      String        @unique
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  User        User          @relation(fields: [userId], references: [id])
+  Transaction Transaction[]
+
+  @@fulltext([email, nik, address, job])
+  @@map("profile")
+}
+
+model ProductReport {
+  id              String         @id @default(cuid())
+  url             String?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  productDetailId String?
+  ProductDetail   ProductDetail? @relation(fields: [productDetailId], references: [id])
+
+  @@index([productDetailId], map: "product_report_productDetailId_fkey")
+  @@map("product_report")
+}
+
+model ProductDetail {
+  id          String          @id @default(cuid())
+  totalUnit   Int?
+  description String?
+  proposalUrl String?
+  minimumBuy  BigInt?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  productId   String          @unique
+  Product     Product         @relation(fields: [productId], references: [id])
+  reports     ProductReport[]
+
+  @@fulltext([description])
+  @@map("product_detail")
+}
+
+model Product {
+  id                 String              @id @default(cuid())
+  name               String?
+  price              BigInt?
+  roi                Decimal?
+  startPeriod        DateTime?
+  endPeriod          DateTime?
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  ProductDetail      ProductDetail?
+  TransactionDetails TransactionDetail[]
+
+  @@fulltext([name])
+  @@map("product")
+}
+
+model TransactionDetail {
+  id            String      @id @default(cuid())
+  unitBought    Int
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  transactionId String
+  productId     String
+  Product       Product     @relation(fields: [productId], references: [id])
+  Transaction   Transaction @relation(fields: [transactionId], references: [id])
+
+  @@index([productId], map: "transaction_detail_productId_fkey")
+  @@index([transactionId], map: "transaction_detail_transactionId_fkey")
+  @@map("transaction_detail")
+}
+
+model Transaction {
+  id                String              @id @default(cuid())
+  total             BigInt?
+  totalPromo        BigInt?
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  profileId         String
+  promoCode         PromoCode[]
+  Profile           Profile             @relation(fields: [profileId], references: [id])
+  transactionDetail TransactionDetail[]
+
+  @@index([profileId], map: "transaction_profileId_fkey")
+  @@map("transaction")
+}
+
+model PromoCode {
+  id            String       @id @default(cuid())
+  promoCode     String?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  transactionId String?
+  Transaction   Transaction? @relation(fields: [transactionId], references: [id])
+
+  @@index([transactionId], map: "promo_code_transactionId_fkey")
+  @@map("promo_code")
+}
+
+model Community {
+  id          String    @id @default(cuid())
+  name        String?
+  description String?
+  userId      String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  User        User?     @relation(fields: [userId], references: [id])
+  Message     Message[]
+
+  @@index([userId], map: "community_userId_fkey")
+  @@fulltext([name, description])
+  @@map("community")
+}
+
+model LiveChat {
+  id        String    @id @default(cuid())
+  name      String?
+  userId    String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  User      User?     @relation(fields: [userId], references: [id])
+  Message   Message[]
+
+  @@index([userId], map: "live_chat_userId_fkey")
+  @@fulltext([name])
+  @@map("live_chat")
+}
+
+model Message {
+  id                  String             @id @default(cuid())
+  text                String?
+  userId              String?
+  communityId         String?
+  liveChatId          String?
+  messageAttachmentId String?
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+  Community           Community?         @relation(fields: [communityId], references: [id])
+  LiveChat            LiveChat?          @relation(fields: [liveChatId], references: [id])
+  MessageAttachment   MessageAttachment? @relation(fields: [messageAttachmentId], references: [id])
+  user                User?              @relation(fields: [userId], references: [id])
+
+  @@index([communityId], map: "message_communityId_fkey")
+  @@index([liveChatId], map: "message_liveChatId_fkey")
+  @@index([messageAttachmentId], map: "message_messageAttachmentId_fkey")
+  @@index([userId], map: "message_userId_fkey")
+  @@fulltext([text])
+  @@map("message")
+}
+
+model MessageAttachment {
+  id              String    @id @default(cuid())
+  hash            String    @unique
+  urlToAttachment String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  message         Message[]
+
+  @@map("message_attachment")
+}
+
+model Article {
+  id            String   @id @default(cuid())
+  title         String?
+  like          Int?     @default(0)
+  content       String?
+  recomendedFor String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@fulltext([title, recomendedFor])
+  @@map("article")
+}
+
+model Game {
+  id          String   @id @default(cuid())
+  name        String?
+  description String?
+  rewardPoint Int?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@fulltext([name, description])
+  @@map("game")
+}
+
+enum Role {
+  SUPER
+  ADMIN
+  USERS
+  FARMERS
+}
