@@ -29,7 +29,7 @@ export const createProduct = async (
 export const findProductByKeyword = async (searchTerm: string, page: number, pageSize: number) => {
     const skip = (page - 1) * pageSize;
 
-    const users = await prisma.product.findMany({
+    const products = await prisma.product.findMany({
         where: {
             name: {
                 search: searchTerm
@@ -44,12 +44,12 @@ export const findProductByKeyword = async (searchTerm: string, page: number, pag
         take: pageSize,
     });
 
-    const totalUsers = users.length
+    const totalProducts = products.length
 
     return {
-        users,
-        totalUsers,
-        totalPages: Math.ceil(totalUsers / pageSize),
+        products,
+        totalProducts,
+        totalPages: Math.ceil(totalProducts / pageSize),
         currentPage: page,
     };
 }
@@ -57,7 +57,7 @@ export const findProductByKeyword = async (searchTerm: string, page: number, pag
 export const findProductByPrice = async (minPrice: number, maxPrice: number, page: number, pageSize: number) => {
     const skip = (page - 1) * pageSize;
 
-    const users = await prisma.product.findMany({
+    const products = await prisma.product.findMany({
         where: {
             price: { lte: maxPrice, gte: minPrice }
         },
@@ -65,12 +65,12 @@ export const findProductByPrice = async (minPrice: number, maxPrice: number, pag
         take: pageSize,
     });
 
-    const totalUsers = users.length
+    const totalProducts = products.length
 
     return {
-        users,
-        totalUsers,
-        totalPages: Math.ceil(totalUsers / pageSize),
+        products,
+        totalProducts,
+        totalPages: Math.ceil(totalProducts / pageSize),
         currentPage: page,
     };
 }
@@ -78,7 +78,7 @@ export const findProductByPrice = async (minPrice: number, maxPrice: number, pag
 export const findProductByRoi = async (minRoi: number, maxRoi: number, page: number, pageSize: number) => {
     const skip = (page - 1) * pageSize;
 
-    const users = await prisma.product.findMany({
+    const products = await prisma.product.findMany({
         where: {
             roi: { lte: maxRoi, gte: minRoi }
 
@@ -87,12 +87,12 @@ export const findProductByRoi = async (minRoi: number, maxRoi: number, page: num
         take: pageSize,
     });
 
-    const totalUsers = users.length
+    const totalProducts = products.length
 
     return {
-        users,
-        totalUsers,
-        totalPages: Math.ceil(totalUsers / pageSize),
+        products,
+        totalProducts,
+        totalPages: Math.ceil(totalProducts / pageSize),
         currentPage: page,
     };
 }
@@ -100,7 +100,7 @@ export const findProductByRoi = async (minRoi: number, maxRoi: number, page: num
 export const findProductByPeriod = async (startPeriod: Date, endPeriod: Date, page: number, pageSize: number) => {
     const skip = (page - 1) * pageSize;
 
-    const users = await prisma.product.findMany({
+    const products = await prisma.product.findMany({
         where: {
             startPeriod: { gte: startPeriod },
             endPeriod: { lte: endPeriod }
@@ -109,30 +109,30 @@ export const findProductByPeriod = async (startPeriod: Date, endPeriod: Date, pa
         take: pageSize,
     });
 
-    const totalUsers = users.length
+    const totalProducts = products.length
 
     return {
-        users,
-        totalUsers,
-        totalPages: Math.ceil(totalUsers / pageSize),
+        products,
+        totalProducts,
+        totalPages: Math.ceil(totalProducts / pageSize),
         currentPage: page,
     };
 }
 
-export const fetchAllProduct = async (page: number, pasgeSize: number) => {
-    const skip = (page - 1) * pasgeSize;
+export const fetchAllProduct = async (page: number, pageSize: number) => {
+    const skip = (page - 1) * pageSize;
 
     const products = await prisma.product.findMany({
         skip: skip,
-        take: pasgeSize,
+        take: pageSize,
     });
 
     const totalProducts = await prisma.product.count();
 
     return {
-        users: products,
-        totalUsers: totalProducts,
-        totalPages: Math.ceil(totalProducts / pasgeSize),
+        products,
+        totalProducts,
+        totalPages: Math.ceil(totalProducts / pageSize),
         currentPage: page,
     };
 };
@@ -141,7 +141,7 @@ export const findProductById = async (id: string) => {
     return await prisma.product.findUnique({
         where: { id },
         include: {
-            ProductDetail: { include: { reports: {} } }
+            ProductDetail: { include: { reports: true } }
         }
     })
 }
@@ -179,7 +179,7 @@ export const deleteProduct = async (id: string) => {
     return await prisma.product.delete({
         where: { id },
         include: {
-            ProductDetail: {}
+            ProductDetail: true
         },
     });
 };

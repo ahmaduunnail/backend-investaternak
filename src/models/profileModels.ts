@@ -15,7 +15,9 @@ export const createProfile = async (
       nik,
       address,
       job,
-      userId,
+      User: {
+        connect: { id: userId }
+      }
     },
   });
 };
@@ -23,7 +25,7 @@ export const createProfile = async (
 export const fetchProfileByKeyword = async (searchTerm: string, page: number, pageSize: number) => {
   const skip = (page - 1) * pageSize;
 
-  const users = await prisma.profile.findMany({
+  const profiles = await prisma.profile.findMany({
     where: {
       email: { search: searchTerm },
       nik: { search: searchTerm },
@@ -34,30 +36,30 @@ export const fetchProfileByKeyword = async (searchTerm: string, page: number, pa
     take: pageSize,
   });
 
-  const totalUsers = users.length
+  const totalProfiles = profiles.length
 
   return {
-    users,
-    totalUsers,
-    totalPages: Math.ceil(totalUsers / pageSize),
+    profiles,
+    totalProfiles,
+    totalPages: Math.ceil(totalProfiles / pageSize),
     currentPage: page,
   };
 }
 
-export const fetchAllProfile = async (page: number, pasgeSize: number) => {
-  const skip = (page - 1) * pasgeSize;
+export const fetchAllProfile = async (page: number, pageSize: number) => {
+  const skip = (page - 1) * pageSize;
 
   const profiles = await prisma.profile.findMany({
     skip: skip,
-    take: pasgeSize,
+    take: pageSize,
   });
 
   const totalProfiles = await prisma.profile.count();
 
   return {
-    users: profiles,
-    totalUsers: totalProfiles,
-    totalPages: Math.ceil(totalProfiles / pasgeSize),
+    profiles,
+    totalProfiles,
+    totalPages: Math.ceil(totalProfiles / pageSize),
     currentPage: page,
   };
 };
@@ -91,12 +93,15 @@ export const updateProfile = async (
     nik: string,
     address: string,
     job: string,
-    userId: string
-  }>
+  }>,
+  userId: string | undefined
 ) => {
   return await prisma.profile.update({
     where: { id },
-    data,
+    data: {
+      ...data,
+      User: userId ? { connect: { id: userId } } : undefined
+    },
   });
 };
 
