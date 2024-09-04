@@ -1,16 +1,12 @@
-// src/index.js
-import express, { Express, Request, Response } from "express";
-import dotenv from "dotenv";
+import express from 'express';
+import articleRoute from './routes/articleRoute';
 
-dotenv.config();
+const app = express();
+const port = 3000;
 
-const app: Express = express();
-const port = process.env.PORT || 3000;
-
-app.get("/", (req: Request, res: Response) => {
-  res.send("Express + TypeScript Server");
-});
+// We tell Express to use the routes we defined
+app.use('/api/v1', articleRoute);
 
 app.listen(port, () => {
-  console.log(`[server]: Server is running at http://localhost:${port}`);
+  console.log(`API running at http://localhost:${port}`);
 });

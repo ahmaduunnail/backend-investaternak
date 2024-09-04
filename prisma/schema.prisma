@@ -9,19 +9,20 @@ datasource db {
 }
 
 model User {
-  id              String      @id @default(cuid())
-  username        String      @unique
+  id              String             @id @default(cuid())
+  username        String             @unique
   password        String
   name            String?
   imageProfileUrl String?
-  role            Role        @default(USERS)
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
+  role            Role               @default(USERS)
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
   Community       Community[]
   LiveChat        LiveChat[]
   Message         Message[]
+  likes           UserArticleLikes[]
   Profile         Profile?
-  deleted         Boolean     @default(false)
+  deleted         Boolean            @default(false)
 
   @@fulltext([username, password, name])
   @@map("user")
@@ -109,32 +110,42 @@ model TransactionDetail {
 }
 
 model Transaction {
-  id                String              @id @default(cuid())
+  id                String                   @id @default(cuid())
   total             BigInt?
   totalPromo        BigInt?
-  createdAt         DateTime            @default(now())
-  updatedAt         DateTime            @updatedAt
+  createdAt         DateTime                 @default(now())
+  updatedAt         DateTime                 @updatedAt
   profileId         String
-  promoCode         PromoCode[]
-  Profile           Profile             @relation(fields: [profileId], references: [id])
+  promoCode         TransactionToPromoCode[]
+  Profile           Profile                  @relation(fields: [profileId], references: [id])
   transactionDetail TransactionDetail[]
-  deleted           Boolean             @default(false)
+  deleted           Boolean                  @default(false)
 
   @@index([profileId], map: "transaction_profileId_fkey")
   @@map("transaction")
 }
 
 model PromoCode {
-  id           String        @id @default(cuid())
+  id           String                   @id @default(cuid())
   promoCode    String?
   discount     BigInt?
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-  transactions Transaction[]
-  deleted      Boolean       @default(false)
+  createdAt    DateTime                 @default(now())
+  updatedAt    DateTime                 @updatedAt
+  transactions TransactionToPromoCode[]
+  deleted      Boolean                  @default(false)
 
   @@fulltext([promoCode])
   @@map("promo_code")
+}
+
+model TransactionToPromoCode {
+  Transaction   Transaction @relation(fields: [transactionId], references: [id])
+  transactionId String
+  PromoCode     PromoCode   @relation(fields: [promoCodeId], references: [id])
+  promoCodeId   String
+
+  @@id([transactionId, promoCodeId])
+  @@map("transaction_to_promo_code")
 }
 
 model Community {
@@ -204,14 +215,15 @@ model MessageAttachment {
 }
 
 model Article {
-  id            String   @id @default(cuid())
+  id            String             @id @default(cuid())
   title         String?
-  like          Int?     @default(0)
-  content       String?
+  like          Int?               @default(0)
+  content       String?            @db.Text
+  userLikes     UserArticleLikes[]
   recomendedFor String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  deleted       Boolean  @default(false)
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+  deleted       Boolean            @default(false)
 
   @@fulltext([title, recomendedFor])
   @@map("article")
@@ -228,6 +240,17 @@ model Game {
 
   @@fulltext([name, description])
   @@map("game")
+}
+
+model UserArticleLikes {
+  user   User   @relation(fields: [userId], references: [id])
+  userId String
+
+  article   Article @relation(fields: [articleId], references: [id])
+  articleId String
+
+  @@id([userId, articleId]) // This ensures that a user can only like an article once
+  @@map("user_article_likes")
 }
 
 enum Role {

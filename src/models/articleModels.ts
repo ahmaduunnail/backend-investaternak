@@ -62,16 +62,29 @@ export const fetchArticleByKeyword = async (searchTerm: string, page: number, pa
   };
 }
 
-export const fetchArticleByRecomendedFor = async (recomendedFor: string, deletedIncluded: boolean = false) => {
-  return await prisma.article.findMany({
+export const fetchArticleByRecomendedFor = async (recomendedFor: string, page: number, pageSize: number, deletedIncluded: boolean = false) => {
+  const skip = (page - 1) * pageSize;
+
+  const articles = await prisma.article.findMany({
     where: {
       recomendedFor,
       deleted: deletedIncluded ? false : undefined
     },
     omit: {
       deleted: !deletedIncluded
-    }
+    },
+    skip,
+    take: pageSize,
   });
+
+  const totalArticles = articles.length
+
+  return {
+    articles,
+    totalArticles,
+    totalPages: Math.ceil(totalArticles / pageSize),
+    currentPage: page,
+  };
 };
 
 export const getArticleById = async (id: string, deletedIncluded: boolean = false) => {
@@ -90,9 +103,38 @@ export const updateArticle = async (
 ) => {
   return await prisma.article.update({
     where: { id },
-    data,
+    data: {
+      ...data
+    },
   });
 };
+
+export const likeArticle = async (
+  userId: string,
+  articleId: string
+) => {
+  const existingLike = await prisma.userArticleLikes.findUnique({
+    where: {
+      userId_articleId: {
+        userId: userId,
+        articleId: articleId
+      }
+    }
+  })
+
+  if (existingLike) {
+    return false;
+  }
+
+  const _ = await prisma.userArticleLikes.create({
+    data: {
+      userId,
+      articleId
+    }
+  })
+
+  return true;
+}
 
 export const softDeleteArticle = async (id: string) => {
   return await prisma.article.update({
