@@ -20,12 +20,14 @@ export const createUser = async (
   });
 };
 
-export const fetchAllUser = async (page: number, pageSize: number) => {
+export const fetchAllUser = async (page: number, pageSize: number, deletedIncluded: boolean = false) => {
   const skip = (page - 1) * pageSize;
 
   const users = await prisma.user.findMany({
     skip: skip,
     take: pageSize,
+    where: { deleted: deletedIncluded ? undefined : false },
+    omit: { password: true, deleted: !deletedIncluded }
   });
 
   const totalUsers = await prisma.user.count();
@@ -38,15 +40,18 @@ export const fetchAllUser = async (page: number, pageSize: number) => {
   };
 };
 
-export const fetchUserByKeyword = async (searchTerm: string, page: number, pageSize: number) => {
+export const fetchUserByKeyword = async (searchTerm: string, page: number, pageSize: number, deletedIncluded: boolean = false) => {
   const skip = (page - 1) * pageSize;
 
   const users = await prisma.user.findMany({
     where: {
-      OR: [
-        { username: { contains: searchTerm.toLowerCase() } },
-        { name: { contains: searchTerm.toLowerCase() } },
-      ],
+      username: { search: searchTerm },
+      name: { search: searchTerm },
+      deleted: deletedIncluded ? false : undefined
+    },
+    omit: {
+      password: true,
+      deleted: !deletedIncluded
     },
     skip,
     take: pageSize,
@@ -62,16 +67,19 @@ export const fetchUserByKeyword = async (searchTerm: string, page: number, pageS
   };
 }
 
-export const fetchUserByUsername = async (username: string) => {
+export const fetchUserByUsername = async (username: string, includePassword: boolean = false) => {
   return await prisma.user.findUnique({
     where: {
       username,
     },
+    omit: {
+      password: !includePassword
+    }
   });
 };
 
-export const getUserById = async (id: string) => {
-  return await prisma.user.findUnique({ where: { id } })
+export const getUserById = async (id: string, includePassword: boolean = false) => {
+  return await prisma.user.findUnique({ where: { id }, omit: { password: !includePassword } })
 }
 
 export const updateUser = async (
@@ -81,7 +89,8 @@ export const updateUser = async (
     password: string;
     name: string;
     imageProfileUrl: string;
-    role: Role;
+    role: Role,
+    deleted: boolean
   }>
 ) => {
   return await prisma.user.update({
@@ -89,6 +98,15 @@ export const updateUser = async (
     data,
   });
 };
+
+export const softDeleteUser = async (id: string) => {
+  return await prisma.user.update({
+    where: { id },
+    data: {
+      deleted: true
+    }
+  })
+}
 
 export const deleteUser = async (id: string) => {
   return await prisma.user.delete({

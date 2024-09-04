@@ -22,7 +22,7 @@ export const createProfile = async (
   });
 };
 
-export const fetchProfileByKeyword = async (searchTerm: string, page: number, pageSize: number) => {
+export const fetchProfileByKeyword = async (searchTerm: string, page: number, pageSize: number, deletedIncluded: boolean = false) => {
   const skip = (page - 1) * pageSize;
 
   const profiles = await prisma.profile.findMany({
@@ -30,7 +30,11 @@ export const fetchProfileByKeyword = async (searchTerm: string, page: number, pa
       email: { search: searchTerm },
       nik: { search: searchTerm },
       address: { search: searchTerm },
-      job: { search: searchTerm }
+      job: { search: searchTerm },
+      deleted: deletedIncluded
+    },
+    omit: {
+      deleted: !deletedIncluded
     },
     skip,
     take: pageSize,
@@ -46,10 +50,16 @@ export const fetchProfileByKeyword = async (searchTerm: string, page: number, pa
   };
 }
 
-export const fetchAllProfile = async (page: number, pageSize: number) => {
+export const fetchAllProfile = async (page: number, pageSize: number, deletedIncluded: boolean = false) => {
   const skip = (page - 1) * pageSize;
 
   const profiles = await prisma.profile.findMany({
+    where: {
+      deleted: deletedIncluded
+    },
+    omit: {
+      deleted: !deletedIncluded
+    },
     skip: skip,
     take: pageSize,
   });
@@ -69,6 +79,9 @@ export const fetchProfileByEmail = async (email: string) => {
     where: {
       email,
     },
+    include: {
+      User: true
+    }
   });
 };
 
@@ -77,12 +90,18 @@ export const fetchProfileByNIK = async (nik: string) => {
     where: {
       nik,
     },
+    include: {
+      User: true
+    }
   });
 };
 
 export const fetchProfileById = async (id: string) => {
   return await prisma.profile.findUnique({
-    where: { id }
+    where: { id },
+    include: {
+      User: true
+    }
   })
 }
 
@@ -93,6 +112,7 @@ export const updateProfile = async (
     nik: string,
     address: string,
     job: string,
+    deleted: boolean
   }>,
   userId: string | undefined
 ) => {
@@ -104,6 +124,15 @@ export const updateProfile = async (
     },
   });
 };
+
+export const softDeleteProfile = async (id: string) => {
+  return await prisma.profile.update({
+    where: { id },
+    data: {
+      deleted: true
+    }
+  })
+}
 
 export const deleteProfile = async (id: string) => {
   return await prisma.profile.delete({

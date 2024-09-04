@@ -28,10 +28,16 @@ export const createTransaction = async (
     })
 }
 
-export const fetchAllTransaction = async (page: number, pageSize: number) => {
+export const fetchAllTransaction = async (page: number, pageSize: number, deletedIncluded: boolean = false) => {
     const skip = (page - 1) * pageSize;
 
     const transactions = await prisma.profile.findMany({
+        where: {
+            deleted: deletedIncluded
+        },
+        omit: {
+            deleted: !deletedIncluded
+        },
         skip,
         take: pageSize,
     });
@@ -46,13 +52,15 @@ export const fetchAllTransaction = async (page: number, pageSize: number) => {
     };
 }
 
-export const fetchAllTransactionByProfileId = async (profileId: string, page: number, pageSize: number) => {
+export const fetchAllTransactionByProfileId = async (profileId: string, page: number, pageSize: number, deletedIncluded: boolean = false) => {
     const skip = (page - 1) * pageSize;
 
     const transactions = await prisma.transaction.findMany({
         where: {
-            profileId
+            profileId,
+            deleted: deletedIncluded
         },
+        omit: { deleted: !deletedIncluded },
         skip,
         take: pageSize,
     });
@@ -83,6 +91,7 @@ export const updateTransaction = async (id: string, data: Partial<{
     total: number,
     totalPromo: number,
     profileId: string,
+    deleted: boolean
 }>,
     listOfPromdoCodeId: string[],) => {
     return await prisma.transaction.update({
@@ -98,11 +107,27 @@ export const updateTransaction = async (id: string, data: Partial<{
 
 export const updateDetailTransaction = async (idDetailTransation: string, data: Partial<{
     unitBought: number,
-    productId: string
+    productId: string,
+    deleted: boolean
 }>) => {
     return await prisma.transactionDetail.update({
         where: { id: idDetailTransation },
         data
+    })
+}
+
+export const softDeleteTransaction = async (id: string) => {
+    return await prisma.transaction.update({
+        where: { id },
+        data: {
+            deleted: true,
+            transactionDetail: {
+                updateMany: {
+                    where: { deleted: false },
+                    data: { deleted: true }
+                }
+            }
+        }
     })
 }
 

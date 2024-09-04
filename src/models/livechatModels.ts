@@ -2,15 +2,13 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-export const createCommunity = async (
+export const createLiveChat = async (
     name: string,
-    description: string,
     userId: string,
 ) => {
-    return await prisma.community.create({
+    return await prisma.liveChat.create({
         data: {
             name,
-            description,
             User: {
                 connect: { id: userId }
             }
@@ -18,11 +16,11 @@ export const createCommunity = async (
     });
 };
 
-export const createMessageOnComunity = async (communityId: string, userId: string, text: string, attachmentUrl: string, attachmentHash: string) => {
+export const createMessageOnComunity = async (liveChatId: string, userId: string, text: string, attachmentUrl: string, attachmentHash: string) => {
     return prisma.message.create({
         data: {
-            Community: {
-                connect: { id: communityId }
+            LiveChat: {
+                connect: { id: liveChatId }
             },
             user: {
                 connect: { id: userId }
@@ -43,13 +41,12 @@ export const createMessageOnComunity = async (communityId: string, userId: strin
     })
 }
 
-export const fetchCommunityByKeyword = async (searchTerm: string, page: number, pageSize: number, deletedIncluded: boolean = false) => {
+export const fetchLiveChatByKeyword = async (searchTerm: string, page: number, pageSize: number, deletedIncluded: boolean = false) => {
     const skip = (page - 1) * pageSize;
 
-    let communities = await prisma.community.findMany({
+    let communities = await prisma.liveChat.findMany({
         where: {
             name: { search: searchTerm },
-            description: { search: searchTerm },
             deleted: deletedIncluded
         },
         omit: {
@@ -63,19 +60,19 @@ export const fetchCommunityByKeyword = async (searchTerm: string, page: number, 
 
     return {
         communities,
-        totalCommunitys: totalCommunities,
+        totalLiveChats: totalCommunities,
         totalPages: Math.ceil(totalCommunities / pageSize),
         currentPage: page,
     };
 }
 
-export const fetchMessageOnCommunityByKeyword = async (idCommunity: string, searchTerm: string, page: number, pageSize: number, deletedIncluded: boolean = false) => {
+export const fetchMessageOnLiveChatByKeyword = async (idLiveChat: string, searchTerm: string, page: number, pageSize: number, deletedIncluded: boolean = false) => {
     const skip = (page - 1) * pageSize;
 
     const messages = await prisma.message.findMany({
         where: {
             text: { search: searchTerm },
-            communityId: idCommunity,
+            liveChatId: idLiveChat,
             deleted: deletedIncluded
         },
         omit: {
@@ -99,10 +96,10 @@ export const fetchMessageOnCommunityByKeyword = async (idCommunity: string, sear
     };
 }
 
-export const fetchAllCommunity = async (page: number, pageSize: number, deletedIncluded: boolean = false) => {
+export const fetchAllLiveChat = async (page: number, pageSize: number, deletedIncluded: boolean = false) => {
     const skip = (page - 1) * pageSize;
 
-    const communities = await prisma.community.findMany({
+    const communities = await prisma.liveChat.findMany({
         skip: skip,
         take: pageSize,
         where: {
@@ -113,7 +110,7 @@ export const fetchAllCommunity = async (page: number, pageSize: number, deletedI
         }
     });
 
-    const totalCommunities = await prisma.community.count();
+    const totalCommunities = await prisma.liveChat.count();
 
     return {
         communities,
@@ -123,12 +120,12 @@ export const fetchAllCommunity = async (page: number, pageSize: number, deletedI
     };
 };
 
-export const fetchMessageOnCommunity = async (idCommunity: string, page: number, pageSize: number, deletedIncluded: boolean = false) => {
+export const fetchMessageOnLiveChat = async (idLiveChat: string, page: number, pageSize: number, deletedIncluded: boolean = false) => {
     const skip = (page - 1) * pageSize;
 
     const messages = await prisma.message.findMany({
         where: {
-            communityId: idCommunity,
+            liveChatId: idLiveChat,
             deleted: deletedIncluded
         },
         skip: skip,
@@ -152,7 +149,7 @@ export const fetchMessageOnCommunity = async (idCommunity: string, page: number,
     };
 }
 
-export const updateCommunity = async (
+export const updateLiveChat = async (
     id: string,
     data: Partial<{
         name: string,
@@ -161,7 +158,7 @@ export const updateCommunity = async (
     }>,
     userId: string
 ) => {
-    return await prisma.community.update({
+    return await prisma.liveChat.update({
         where: { id },
         data: {
             ...data,
@@ -170,7 +167,7 @@ export const updateCommunity = async (
     });
 };
 
-export const updateMessageOnCommunity = async (idMessage: string,
+export const updateMessageOnLiveChat = async (idMessage: string,
     data: Partial<{
         text: string,
         deleted: boolean
@@ -192,7 +189,7 @@ export const updateMessageOnCommunity = async (idMessage: string,
     })
 }
 
-export const softDeleteMessageOnCommunity = async (idMessage: string) => {
+export const softDeleteMessageOnLiveChat = async (idMessage: string) => {
     return await prisma.message.update({
         where: { id: idMessage },
         data: {
@@ -201,8 +198,8 @@ export const softDeleteMessageOnCommunity = async (idMessage: string) => {
     })
 }
 
-export const softDeleteCommunity = async (id: string) => {
-    return await prisma.community.update({
+export const softDeleteLiveChat = async (id: string) => {
+    return await prisma.liveChat.update({
         where: { id },
         data: {
             deleted: true
@@ -210,14 +207,14 @@ export const softDeleteCommunity = async (id: string) => {
     });
 };
 
-export const deleteMessageOnCommunity = async (idMessage: string) => {
+export const deleteMessageOnLiveChat = async (idMessage: string) => {
     return await prisma.message.delete({
         where: { id: idMessage }
     })
 }
 
-export const deleteCommunity = async (id: string) => {
-    return await prisma.community.delete({
+export const deleteLiveChat = async (id: string) => {
+    return await prisma.liveChat.delete({
         where: { id },
         include: {
             Message: true

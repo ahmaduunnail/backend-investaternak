@@ -12,12 +12,15 @@ export const createPromo = async (
   });
 };
 
-export const fetchPromoByKeyword = async (searchTerm: string, page: number, pageSize: number) => {
+export const fetchPromoByKeyword = async (searchTerm: string, page: number, pageSize: number, deletedIncluded: boolean = false) => {
   const skip = (page - 1) * pageSize;
 
   const promos = await prisma.promoCode.findMany({
     where: {
-      promoCode: { search: searchTerm }
+      promoCode: { search: searchTerm }, deleted: deletedIncluded ? undefined : false
+    },
+    omit: {
+      deleted: !deletedIncluded
     },
     skip,
     take: pageSize,
@@ -33,10 +36,14 @@ export const fetchPromoByKeyword = async (searchTerm: string, page: number, page
   };
 }
 
-export const fetchAllPromo = async (page: number, pageSize: number) => {
+export const fetchAllPromo = async (page: number, pageSize: number, deletedIncluded: boolean = false) => {
   const skip = (page - 1) * pageSize;
 
   const promos = await prisma.promoCode.findMany({
+    where: {
+      deleted: deletedIncluded ? undefined : false
+    },
+    omit: { deleted: !deletedIncluded },
     skip: skip,
     take: pageSize,
   });
@@ -55,7 +62,8 @@ export const updatePromo = async (
   id: string,
   data: Partial<{
     promoCode: string,
-    discount: number
+    discount: number,
+    deleted: boolean
   }>
 ) => {
   return await prisma.promoCode.update({
@@ -63,6 +71,15 @@ export const updatePromo = async (
     data,
   });
 };
+
+export const softdeletedPromo = async (id: string) => {
+  return await prisma.promoCode.update({
+    where: { id },
+    data: {
+      deleted: true
+    }
+  })
+}
 
 export const deletePromo = async (id: string) => {
   return await prisma.promoCode.delete({

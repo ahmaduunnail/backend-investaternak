@@ -1,6 +1,6 @@
 generator client {
   provider        = "prisma-client-js"
-  previewFeatures = ["fullTextIndex", "fullTextSearch"]
+  previewFeatures = ["fullTextIndex", "fullTextSearch", "omitApi"]
 }
 
 datasource db {
@@ -21,6 +21,7 @@ model User {
   LiveChat        LiveChat[]
   Message         Message[]
   Profile         Profile?
+  deleted         Boolean     @default(false)
 
   @@fulltext([username, password, name])
   @@map("user")
@@ -38,6 +39,7 @@ model Profile {
   updatedAt   DateTime      @updatedAt
   User        User          @relation(fields: [userId], references: [id])
   Transaction Transaction[]
+  deleted     Boolean       @default(false)
 
   @@fulltext([email, nik, address, job])
   @@map("profile")
@@ -50,6 +52,7 @@ model ProductReport {
   updatedAt       DateTime       @updatedAt
   productDetailId String?
   ProductDetail   ProductDetail? @relation(fields: [productDetailId], references: [id])
+  deleted         Boolean        @default(false)
 
   @@index([productDetailId], map: "product_report_productDetailId_fkey")
   @@map("product_report")
@@ -66,6 +69,7 @@ model ProductDetail {
   productId   String          @unique
   Product     Product         @relation(fields: [productId], references: [id])
   reports     ProductReport[]
+  deleted     Boolean         @default(false)
 
   @@fulltext([description])
   @@map("product_detail")
@@ -82,6 +86,7 @@ model Product {
   updatedAt          DateTime            @updatedAt
   ProductDetail      ProductDetail?
   TransactionDetails TransactionDetail[]
+  deleted            Boolean             @default(false)
 
   @@fulltext([name])
   @@map("product")
@@ -96,6 +101,7 @@ model TransactionDetail {
   productId     String
   Product       Product     @relation(fields: [productId], references: [id])
   Transaction   Transaction @relation(fields: [transactionId], references: [id])
+  deleted       Boolean     @default(false)
 
   @@index([productId], map: "transaction_detail_productId_fkey")
   @@index([transactionId], map: "transaction_detail_transactionId_fkey")
@@ -112,6 +118,7 @@ model Transaction {
   promoCode         PromoCode[]
   Profile           Profile             @relation(fields: [profileId], references: [id])
   transactionDetail TransactionDetail[]
+  deleted           Boolean             @default(false)
 
   @@index([profileId], map: "transaction_profileId_fkey")
   @@map("transaction")
@@ -124,6 +131,7 @@ model PromoCode {
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
   transactions Transaction[]
+  deleted      Boolean       @default(false)
 
   @@fulltext([promoCode])
   @@map("promo_code")
@@ -138,6 +146,7 @@ model Community {
   updatedAt   DateTime  @updatedAt
   User        User?     @relation(fields: [userId], references: [id])
   Message     Message[]
+  deleted     Boolean   @default(false)
 
   @@index([userId], map: "community_userId_fkey")
   @@fulltext([name, description])
@@ -152,6 +161,7 @@ model LiveChat {
   updatedAt DateTime  @updatedAt
   User      User?     @relation(fields: [userId], references: [id])
   Message   Message[]
+  deleted   Boolean   @default(false)
 
   @@index([userId], map: "live_chat_userId_fkey")
   @@fulltext([name])
@@ -171,6 +181,7 @@ model Message {
   LiveChat            LiveChat?          @relation(fields: [liveChatId], references: [id])
   MessageAttachment   MessageAttachment? @relation(fields: [messageAttachmentId], references: [id])
   user                User?              @relation(fields: [userId], references: [id])
+  deleted             Boolean            @default(false)
 
   @@index([communityId], map: "message_communityId_fkey")
   @@index([liveChatId], map: "message_liveChatId_fkey")
@@ -187,6 +198,7 @@ model MessageAttachment {
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
   message         Message[]
+  deleted         Boolean   @default(false)
 
   @@map("message_attachment")
 }
@@ -199,6 +211,7 @@ model Article {
   recomendedFor String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+  deleted       Boolean  @default(false)
 
   @@fulltext([title, recomendedFor])
   @@map("article")
@@ -211,6 +224,7 @@ model Game {
   rewardPoint Int?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  deleted     Boolean  @default(false)
 
   @@fulltext([name, description])
   @@map("game")
