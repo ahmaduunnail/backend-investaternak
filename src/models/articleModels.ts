@@ -10,8 +10,12 @@ export const createArticle = async (
   return await prisma.article.create({
     data: {
       title,
-      content,
-      recomendedFor
+      recomendedFor,
+      articleDetail: {
+        create: {
+          content
+        }
+      }
     },
   });
 };
@@ -88,7 +92,7 @@ export const fetchArticleByRecomendedFor = async (recomendedFor: string, page: n
 };
 
 export const getArticleById = async (id: string, deletedIncluded: boolean = false) => {
-  return await prisma.article.findUnique({ where: { id, deleted: deletedIncluded ? false : undefined }, omit: { deleted: !deletedIncluded } })
+  return await prisma.article.findUnique({ where: { id, deleted: deletedIncluded ? false : undefined }, omit: { deleted: !deletedIncluded }, include: { articleDetail: true } })
 }
 
 export const updateArticle = async (
@@ -98,17 +102,23 @@ export const updateArticle = async (
     content: string,
     recomendedFor: string,
     deleted: boolean
-  }>
+  }>,
+  content?: string
 ) => {
   return await prisma.article.update({
     where: { id },
     data: {
-      ...data
+      ...data,
+      articleDetail: {
+        update: content ? {
+          content
+        } : undefined
+      }
     },
   });
 };
 
-export const findLikesArticle = async (userId: string,
+export const findLikedArticle = async (userId: string,
   articleId: string) => {
   const existingLike = await prisma.userArticleLikes.findUnique({
     where: {
@@ -183,8 +193,8 @@ export const softDeleteArticle = async (id: string) => {
   })
 }
 
-export const deleteArticle = async (id: string) => {
-  return await prisma.article.delete({
-    where: { id },
-  });
-};
+// export const deleteArticle = async (id: string) => {
+//   return await prisma.article.delete({
+//     where: { id },
+//   });
+// };

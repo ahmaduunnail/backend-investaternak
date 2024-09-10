@@ -158,7 +158,7 @@ export const updateLiveChat = async (
         description: string
         deleted: boolean
     }>,
-    userId: string
+    userId?: string
 ) => {
     return await prisma.liveChat.update({
         where: { id },
@@ -174,14 +174,14 @@ export const updateMessageOnLiveChat = async (idMessage: string,
         text: string,
         deleted: boolean
     }>,
-    attachmentUrl: string,
-    attachmentHash: string
+    attachmentUrl?: string,
+    attachmentHash?: string
 ) => {
     return await prisma.message.update({
         where: { id: idMessage, liveChatId: null },
         data: {
             ...data,
-            MessageAttachment: attachmentUrl ? {
+            MessageAttachment: attachmentUrl && attachmentHash ? {
                 connectOrCreate: {
                     where: { hash: attachmentHash },
                     create: { urlToAttachment: attachmentUrl, hash: attachmentHash }
@@ -209,18 +209,18 @@ export const softDeleteLiveChat = async (id: string) => {
     });
 };
 
-export const deleteMessageOnLiveChat = async (idMessage: string) => {
-    return await prisma.message.delete({
-        where: { id: idMessage }
-    })
-}
+// export const deleteMessageOnLiveChat = async (idMessage: string) => {
+//     return await prisma.message.delete({
+//         where: { id: idMessage }
+//     })
+// }
 
-export const deleteLiveChat = async (id: string) => {
-    return await prisma.liveChat.delete({
-        relationLoadStrategy: 'join',
-        where: { id },
-        include: {
-            Message: true
-        }
-    });
-};
+// export const deleteLiveChat = async (id: string) => {
+//     return await prisma.liveChat.delete({
+//         relationLoadStrategy: 'join',
+//         where: { id },
+//         include: {
+//             Message: true
+//         }
+//     });
+// };

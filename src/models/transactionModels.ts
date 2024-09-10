@@ -139,12 +139,12 @@ export const softDeleteTransaction = async (id: string) => {
     })
 }
 
-export const deleteTransaction = async (id: string) => {
-    return await prisma.transaction.delete({
-        relationLoadStrategy: 'join',
-        where: { id },
-        include: {
-            transactionDetail: true
-        }
-    })
-}
+// export const deleteTransaction = async (id: string) => {
+//     return await prisma.transaction.delete({
+//         relationLoadStrategy: 'join',
+//         where: { id },
+//         include: {
+//             transactionDetail: true
+//         }
+//     })
+// }

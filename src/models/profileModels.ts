@@ -98,10 +98,13 @@ export const fetchProfileByNIK = async (nik: string) => {
   });
 };
 
-export const fetchProfileById = async (id: string) => {
+export const fetchProfileById = async (id: string, deletedIncluded: boolean = false) => {
   return await prisma.profile.findUnique({
     relationLoadStrategy: 'join',
-    where: { id },
+    where: { id, deleted: deletedIncluded },
+    omit: {
+      deleted: !deletedIncluded
+    },
     include: {
       User: true
     }
@@ -117,7 +120,7 @@ export const updateProfile = async (
     job: string,
     deleted: boolean
   }>,
-  userId: string | undefined
+  userId?: string
 ) => {
   return await prisma.profile.update({
     where: { id },
@@ -137,8 +140,8 @@ export const softDeleteProfile = async (id: string) => {
   })
 }
 
-export const deleteProfile = async (id: string) => {
-  return await prisma.profile.delete({
-    where: { id },
-  });
-};
+// export const deleteProfile = async (id: string) => {
+//   return await prisma.profile.delete({
+//     where: { id },
+//   });
+// };

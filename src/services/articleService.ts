@@ -57,7 +57,7 @@ export const removeArticle = async (id: string) => {
 export const likeAndDislikeArticle = async (id: string, userId: string) => {
     //caching stuff
 
-    const existingLike = await articleModels.findLikesArticle(id, userId);
+    const existingLike = await articleModels.findLikedArticle(id, userId);
     let res: boolean;
 
     if (existingLike) {

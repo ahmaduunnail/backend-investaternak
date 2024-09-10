@@ -161,7 +161,7 @@ export const updateCommunity = async (
         description: string
         deleted: boolean
     }>,
-    userId: string
+    userId?: string
 ) => {
     return await prisma.community.update({
         where: { id },
@@ -177,14 +177,14 @@ export const updateMessageOnCommunity = async (idMessage: string,
         text: string,
         deleted: boolean
     }>,
-    attachmentUrl: string,
-    attachmentHash: string
+    attachmentUrl?: string,
+    attachmentHash?: string
 ) => {
     return await prisma.message.update({
         where: { id: idMessage, liveChatId: null },
         data: {
             ...data,
-            MessageAttachment: attachmentUrl ? {
+            MessageAttachment: attachmentUrl && attachmentHash ? {
                 connectOrCreate: {
                     where: { hash: attachmentHash },
                     create: { urlToAttachment: attachmentUrl, hash: attachmentHash }
@@ -192,6 +192,72 @@ export const updateMessageOnCommunity = async (idMessage: string,
             } : undefined
         }
     })
+}
+
+export const findFollowedCommunity = async (userId: string,
+    communityId: string) => {
+    const existingLike = await prisma.userCommunityFollow.findUnique({
+        where: {
+            userId_communityId: {
+                userId: userId,
+                communityId: communityId
+            }
+        }
+    })
+
+    return existingLike ? true : false
+}
+
+export const followCommunity = async (
+    userId: string,
+    communityId: string
+) => {
+    const _ = await prisma.userCommunityFollow.create({
+        data: {
+            userId,
+            communityId
+        }
+    })
+
+    const __ = await prisma.community.update({
+        where: {
+            id: communityId
+        },
+        data: {
+            follow: {
+                increment: 1
+            }
+        }
+    })
+
+    return true;
+}
+
+export const unfollowCommunity = async (
+    userId: string,
+    communityId: string
+) => {
+    const _ = await prisma.userCommunityFollow.delete({
+        where: {
+            userId_communityId: {
+                userId,
+                communityId
+            }
+        },
+    })
+
+    const __ = await prisma.community.update({
+        where: {
+            id: communityId
+        },
+        data: {
+            follow: {
+                decrement: 1
+            }
+        }
+    })
+
+    return false;
 }
 
 export const softDeleteMessageOnCommunity = async (idMessage: string) => {
@@ -212,18 +278,18 @@ export const softDeleteCommunity = async (id: string) => {
     });
 };
 
-export const deleteMessageOnCommunity = async (idMessage: string) => {
-    return await prisma.message.delete({
-        where: { id: idMessage }
-    })
-}
+// export const deleteMessageOnCommunity = async (idMessage: string) => {
+//     return await prisma.message.delete({
+//         where: { id: idMessage }
+//     })
+// }
 
-export const deleteCommunity = async (id: string) => {
-    return await prisma.community.delete({
-        relationLoadStrategy: 'join',
-        where: { id },
-        include: {
-            Message: true
-        }
-    });
-};
+// export const deleteCommunity = async (id: string) => {
+//     return await prisma.community.delete({
+//         relationLoadStrategy: 'join',
+//         where: { id },
+//         include: {
+//             Message: true
+//         }
+//     });
+// };

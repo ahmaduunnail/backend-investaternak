@@ -62,10 +62,6 @@ export const fetchGameByKeyword = async (searchTerm: string, page: number, pageS
     };
 }
 
-export const getGameById = async (id: string, deletedIncluded: boolean = false) => {
-    return await prisma.game.findUnique({ where: { id, deleted: deletedIncluded ? false : undefined }, omit: { deleted: !deletedIncluded } })
-}
-
 export const updateGame = async (
     id: string,
     data: Partial<{
@@ -81,7 +77,7 @@ export const updateGame = async (
     });
 };
 
-export const softDelete = async (id: string) => {
+export const softDeleteGame = async (id: string) => {
     return await prisma.game.update({
         where: { id },
         data: {
@@ -90,8 +86,8 @@ export const softDelete = async (id: string) => {
     })
 }
 
-export const deleteUser = async (id: string) => {
-    return await prisma.game.delete({
-        where: { id },
-    });
-};
+// export const deleteUser = async (id: string) => {
+//     return await prisma.game.delete({
+//         where: { id },
+//     });
+// };

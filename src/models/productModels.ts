@@ -217,12 +217,12 @@ export const softDeleteProduct = async (id: string) => {
 };
 
 
-export const deleteProduct = async (id: string) => {
-    return await prisma.product.delete({
-        relationLoadStrategy: 'join',
-        where: { id },
-        include: {
-            ProductDetail: true
-        },
-    });
-};
+// export const deleteProduct = async (id: string) => {
+//     return await prisma.product.delete({
+//         relationLoadStrategy: 'join',
+//         where: { id },
+//         include: {
+//             ProductDetail: true
+//         },
+//     });
+// };

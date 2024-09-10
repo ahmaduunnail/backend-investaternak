@@ -60,11 +60,11 @@ export const fetchAllReportByProductDetailId = async (id: string, page: number, 
   };
 };
 
-export const fetchReportById = async (id: string) => {
-  return await prisma.productReport.findUnique({
-    where: { id }
-  })
-}
+// export const fetchReportById = async (id: string) => {
+//   return await prisma.productReport.findUnique({
+//     where: { id }
+//   })
+// }
 
 export const updateReport = async (
   id: string,
@@ -103,8 +103,8 @@ export const softDeleteReportByDetailProduct = async (detailProduct: string) => 
   })
 }
 
-export const deleteReport = async (id: string) => {
-  return await prisma.productReport.delete({
-    where: { id },
-  });
-};
+// export const deleteReport = async (id: string) => {
+//   return await prisma.productReport.delete({
+//     where: { id },
+//   });
+// };

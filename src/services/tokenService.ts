@@ -45,7 +45,7 @@ export const refresh = async (refreshToken: string) => {
 
     try {
         await verifyToken(refreshToken, true);
-        const newAccessToken = await generateToken(tokenRecord.userId, tokenRecord.user.role);
+        const newAccessToken = generateToken(tokenRecord.userId, tokenRecord.user.role);
         return newAccessToken;
     } catch (err) {
         if (err instanceof TokenError && err.code == TokenError.codes.expired) {

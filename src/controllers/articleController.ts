@@ -3,6 +3,7 @@ import { validationResult } from 'express-validator';
 import * as articleService from '../services/articleService';
 import { createResponse } from '../utils/utils';
 import { paginationNumber } from '../const';
+import { Role } from '@prisma/client';
 
 export const createArticle = async (req: Request, res: Response) => {
     const errors = validationResult(req);
@@ -41,11 +42,11 @@ export const getArticles = async (req: Request, res: Response) => {
     let data: any;
 
     if (q) {
-        data = await articleService.getArticleByKeyword(q as string, page as number, pageSize as number, false);
+        data = await articleService.getArticleByKeyword(q as string, page as number, pageSize as number, req.user?.role == Role.ADMIN);
     } else if (recomendedFor) {
         data = await articleService.getAllArticleByRecomendedFor(recomendedFor as string, page as number, pageSize as number);
     } else if (id) {
-        data = await articleService.getArticleById(id as string, true);
+        data = await articleService.getArticleById(id as string, req.user?.role == Role.ADMIN);
     } else {
         data = await articleService.getAllArticle(page as number, pageSize as number);
     }

@@ -26,13 +26,19 @@ export const findToken = async (token: string) => {
 };
 
 export const deleteToken = async (token: string) => {
-    return prisma.token.delete({
+    return prisma.token.update({
         where: { token },
+        data: {
+            deleted: true
+        },
     });
 };
 
 export const deleteTokensByUserId = async (userId: string) => {
-    return prisma.token.deleteMany({
-        where: { userId },
+    return prisma.token.updateMany({
+        where: { userId, deleted: false },
+        data: {
+            deleted: true
+        }
     });
 };
