@@ -78,7 +78,7 @@ export const fetchUserByUsername = async (username: string, includePassword: boo
   });
 };
 
-export const getUserById = async (id: string, includePassword: boolean = false) => {
+export const fetchUserById = async (id: string, includePassword: boolean = false) => {
   return await prisma.user.findUnique({ where: { id }, omit: { password: !includePassword } })
 }
 

@@ -36,18 +36,18 @@ export const getArticles = async (req: Request, res: Response) => {
         ));
     }
 
-    const { q, recomendedFor, id, page = 1, pageSizes = paginationNumber } = req.query
+    const { q, recomendedFor, id, page = 1, pageSize = paginationNumber } = req.query
 
     let data: any;
 
     if (q) {
-        data = await articleService.getArticleByKeyword(q as string, page as number, pageSizes as number, false);
+        data = await articleService.getArticleByKeyword(q as string, page as number, pageSize as number, false);
     } else if (recomendedFor) {
-        data = await articleService.getAllArticleByRecomendedFor(recomendedFor as string, page as number, pageSizes as number);
+        data = await articleService.getAllArticleByRecomendedFor(recomendedFor as string, page as number, pageSize as number);
     } else if (id) {
         data = await articleService.getArticleById(id as string, true);
     } else {
-        data = await articleService.getAllArticle(page as number, pageSizes as number);
+        data = await articleService.getAllArticle(page as number, pageSize as number);
     }
 
     res.status(data ? 200 : 404).json(createResponse(
