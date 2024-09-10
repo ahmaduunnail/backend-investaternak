@@ -1,8 +1,8 @@
 import { Request, Response } from 'express';
 import { validationResult } from 'express-validator';
 import * as articleService from '../services/articleService';
-import { createResponse } from '../middlewares/utils';
-import { paginationNumber } from '../middlewares/const';
+import { createResponse } from '../utils/utils';
+import { paginationNumber } from '../const';
 
 export const createArticle = async (req: Request, res: Response) => {
     const errors = validationResult(req);

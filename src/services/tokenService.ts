@@ -1,6 +1,6 @@
-import { generateToken, verifyToken } from "../middlewares/jwt";
+import { generateToken, verifyToken } from "../utils/jwt";
 import { TokenError, } from "fast-jwt";
-import { parseDuration } from "../middlewares/utils";
+import { parseDuration } from "../utils/utils";
 import { saveToken, deleteTokensByUserId, deleteToken, findToken } from "../models/tokenModels";
 import { fetchUserByUsername } from "../models/userModels";
 

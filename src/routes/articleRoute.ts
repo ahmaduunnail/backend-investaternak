@@ -1,7 +1,7 @@
 import express from 'express';
 import { body, query } from 'express-validator';
 import * as articleController from "../controllers/articleController";
-import { paginationNumber, RecomendedForArticleEnum } from '../middlewares/const';
+import { paginationNumber, RecomendedForArticleEnum } from '../const';
 import authorize from '../middlewares/authorizations';
 import { Role } from '@prisma/client';
 

@@ -1,8 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 import { TokenError } from 'fast-jwt';
-import { verifyToken } from './jwt';
+import { verifyToken } from '../utils/jwt';
 import { Role } from '@prisma/client';
-import { createResponse } from './utils';
+import { createResponse } from '../utils/utils';
 
 
 const authorize = (requiredRoles: Role[], wasFromRefresh: boolean = false) => {
