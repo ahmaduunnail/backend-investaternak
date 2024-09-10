@@ -30,6 +30,7 @@ export const findProductByKeyword = async (searchTerm: string, page: number, pag
     const skip = (page - 1) * pageSize;
 
     const products = await prisma.product.findMany({
+        relationLoadStrategy: 'join',
         where: {
             name: {
                 search: searchTerm
@@ -160,6 +161,7 @@ export const fetchAllProduct = async (page: number, pageSize: number, deletedInc
 
 export const findProductById = async (id: string) => {
     return await prisma.product.findUnique({
+        relationLoadStrategy: 'join',
         where: { id },
         include: {
             ProductDetail: { include: { reports: true } }
@@ -217,6 +219,7 @@ export const softDeleteProduct = async (id: string) => {
 
 export const deleteProduct = async (id: string) => {
     return await prisma.product.delete({
+        relationLoadStrategy: 'join',
         where: { id },
         include: {
             ProductDetail: true

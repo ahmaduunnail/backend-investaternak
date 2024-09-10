@@ -73,6 +73,7 @@ export const fetchMessageOnCommunityByKeyword = async (idCommunity: string, sear
     const skip = (page - 1) * pageSize;
 
     const messages = await prisma.message.findMany({
+        relationLoadStrategy: 'join',
         where: {
             text: { search: searchTerm },
             communityId: idCommunity,
@@ -127,6 +128,7 @@ export const fetchMessageOnCommunity = async (idCommunity: string, page: number,
     const skip = (page - 1) * pageSize;
 
     const messages = await prisma.message.findMany({
+        relationLoadStrategy: 'join',
         where: {
             communityId: idCommunity,
             deleted: deletedIncluded
@@ -218,6 +220,7 @@ export const deleteMessageOnCommunity = async (idMessage: string) => {
 
 export const deleteCommunity = async (id: string) => {
     return await prisma.community.delete({
+        relationLoadStrategy: 'join',
         where: { id },
         include: {
             Message: true

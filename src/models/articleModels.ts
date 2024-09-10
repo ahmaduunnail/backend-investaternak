@@ -97,7 +97,6 @@ export const updateArticle = async (
     title: string,
     content: string,
     recomendedFor: string,
-    like: number,
     deleted: boolean
   }>
 ) => {
@@ -109,10 +108,8 @@ export const updateArticle = async (
   });
 };
 
-export const likeArticle = async (
-  userId: string,
-  articleId: string
-) => {
+export const findLikesArticle = async (userId: string,
+  articleId: string) => {
   const existingLike = await prisma.userArticleLikes.findUnique({
     where: {
       userId_articleId: {
@@ -122,10 +119,13 @@ export const likeArticle = async (
     }
   })
 
-  if (existingLike) {
-    return false;
-  }
+  return existingLike ? true : false
+}
 
+export const likeArticle = async (
+  userId: string,
+  articleId: string
+) => {
   const _ = await prisma.userArticleLikes.create({
     data: {
       userId,
@@ -133,7 +133,45 @@ export const likeArticle = async (
     }
   })
 
+  const __ = await prisma.article.update({
+    where: {
+      id: articleId
+    },
+    data: {
+      like: {
+        increment: 1
+      }
+    }
+  })
+
   return true;
+}
+
+export const dislikeArticle = async (
+  userId: string,
+  articleId: string
+) => {
+  const _ = await prisma.userArticleLikes.delete({
+    where: {
+      userId_articleId: {
+        userId,
+        articleId
+      }
+    },
+  })
+
+  const __ = await prisma.article.update({
+    where: {
+      id: articleId
+    },
+    data: {
+      like: {
+        decrement: 1
+      }
+    }
+  })
+
+  return false;
 }
 
 export const softDeleteArticle = async (id: string) => {

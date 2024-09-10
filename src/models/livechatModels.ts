@@ -70,6 +70,7 @@ export const fetchMessageOnLiveChatByKeyword = async (idLiveChat: string, search
     const skip = (page - 1) * pageSize;
 
     const messages = await prisma.message.findMany({
+        relationLoadStrategy: 'join',
         where: {
             text: { search: searchTerm },
             liveChatId: idLiveChat,
@@ -124,6 +125,7 @@ export const fetchMessageOnLiveChat = async (idLiveChat: string, page: number, p
     const skip = (page - 1) * pageSize;
 
     const messages = await prisma.message.findMany({
+        relationLoadStrategy: 'join',
         where: {
             liveChatId: idLiveChat,
             deleted: deletedIncluded
@@ -215,6 +217,7 @@ export const deleteMessageOnLiveChat = async (idMessage: string) => {
 
 export const deleteLiveChat = async (id: string) => {
     return await prisma.liveChat.delete({
+        relationLoadStrategy: 'join',
         where: { id },
         include: {
             Message: true

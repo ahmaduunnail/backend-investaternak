@@ -76,6 +76,7 @@ export const fetchAllProfile = async (page: number, pageSize: number, deletedInc
 
 export const fetchProfileByEmail = async (email: string) => {
   return await prisma.profile.findUnique({
+    relationLoadStrategy: 'join',
     where: {
       email,
     },
@@ -87,6 +88,7 @@ export const fetchProfileByEmail = async (email: string) => {
 
 export const fetchProfileByNIK = async (nik: string) => {
   return await prisma.profile.findUnique({
+    relationLoadStrategy: 'join',
     where: {
       nik,
     },
@@ -98,6 +100,7 @@ export const fetchProfileByNIK = async (nik: string) => {
 
 export const fetchProfileById = async (id: string) => {
   return await prisma.profile.findUnique({
+    relationLoadStrategy: 'join',
     where: { id },
     include: {
       User: true

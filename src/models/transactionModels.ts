@@ -7,7 +7,7 @@ export const createTransaction = async (
     total: number,
     totalPromo: number,
     profileId: string,
-    listOfPromdoCodeId: string[],
+    listOfPromoCodeId: string[] | undefined,
     // Transaction detail
     listOfTransaction: { unitBought: number, productId: string }[],
 ) => {
@@ -21,9 +21,13 @@ export const createTransaction = async (
                     data: listOfTransaction
                 }
             },
-            promoCode: listOfPromdoCodeId.length
-                ? { connect: listOfPromdoCodeId.map(code => ({ id: code })) }
-                : undefined,
+            promoCode: listOfPromoCodeId ? {
+                createMany: {
+                    data: listOfPromoCodeId.map(it => ({
+                        promoCodeId: it
+                    }))
+                }
+            } : undefined
         },
     })
 }
@@ -77,6 +81,7 @@ export const fetchAllTransactionByProfileId = async (profileId: string, page: nu
 
 export const fetchTransactionDetailById = async (id: string) => {
     return await prisma.transaction.findUnique({
+        relationLoadStrategy: 'join',
         where: {
             id
         },
@@ -93,26 +98,29 @@ export const updateTransaction = async (id: string, data: Partial<{
     profileId: string,
     deleted: boolean
 }>,
-    listOfPromdoCodeId: string[],) => {
+    listOfPromoCodeId: string[],
+    // Transaction detail
+    listOfTransaction: { unitBought: number, productId: string }[],
+) => {
     return await prisma.transaction.update({
-        where: { id }, data: {
-            ...data, promoCode: {
-                set: listOfPromdoCodeId.length
-                    ? listOfPromdoCodeId.map(code => ({ id: code }))
-                    : [], // Clear existing promo codes if none are provided
+        where: { id },
+        data: {
+            ...data,
+            transactionDetail: {
+                deleteMany: {},
+                createMany: {
+                    data: listOfTransaction
+                }
             },
+            promoCode: {
+                deleteMany: {},
+                createMany: {
+                    data: listOfPromoCodeId.map(it => ({
+                        promoCodeId: it
+                    }))  // Add new promo codes
+                }
+            }
         },
-    })
-}
-
-export const updateDetailTransaction = async (idDetailTransation: string, data: Partial<{
-    unitBought: number,
-    productId: string,
-    deleted: boolean
-}>) => {
-    return await prisma.transactionDetail.update({
-        where: { id: idDetailTransation },
-        data
     })
 }
 
@@ -133,6 +141,7 @@ export const softDeleteTransaction = async (id: string) => {
 
 export const deleteTransaction = async (id: string) => {
     return await prisma.transaction.delete({
+        relationLoadStrategy: 'join',
         where: { id },
         include: {
             transactionDetail: true

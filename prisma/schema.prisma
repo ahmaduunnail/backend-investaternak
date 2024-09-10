@@ -1,6 +1,6 @@
 generator client {
   provider        = "prisma-client-js"
-  previewFeatures = ["fullTextIndex", "fullTextSearch", "omitApi"]
+  previewFeatures = ["fullTextIndex", "fullTextSearch", "omitApi", "relationJoins"]
 }
 
 datasource db {
@@ -23,9 +23,23 @@ model User {
   likes           UserArticleLikes[]
   Profile         Profile?
   deleted         Boolean            @default(false)
+  Token           Token[]
 
   @@fulltext([username, password, name])
   @@map("user")
+}
+
+model Token {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  isRefresh Boolean  @default(false)
+  expiresAt DateTime
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("tokens")
 }
 
 model Profile {
