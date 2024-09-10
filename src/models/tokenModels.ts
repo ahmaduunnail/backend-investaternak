@@ -2,12 +2,11 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-export const saveToken = async (userId: string, token: string, isRefresh: boolean, expiresAt: Date) => {
+export const saveToken = async (userId: string, token: string, expiresAt: Date) => {
     return prisma.token.create({
         data: {
             userId,
             token,
-            isRefresh,
             expiresAt,
         },
     });
@@ -16,12 +15,13 @@ export const saveToken = async (userId: string, token: string, isRefresh: boolea
 export const findToken = async (token: string) => {
     return prisma.token.findUnique({
         where: { token },
-    });
-};
-
-export const findTokensByUserId = async (userId: string) => {
-    return prisma.token.findMany({
-        where: { userId },
+        include: {
+            user: {
+                select: {
+                    role: true
+                }
+            }
+        }
     });
 };
 

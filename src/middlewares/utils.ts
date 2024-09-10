@@ -1,3 +1,5 @@
+import { Request, Response, NextFunction } from 'express';
+
 interface ApiResponse<T = any> {
     success: boolean;
     data?: T;
@@ -13,6 +15,11 @@ export const createResponse = <T = any>(
 ): ApiResponse<T> => {
     return { success, data, message, errors };
 };
+
+export const asyncWrapper = (fn: (req: Request, res: Response, next: NextFunction) => Promise<void>) => 
+  (req: Request, res: Response, next: NextFunction) => {
+    Promise.resolve(fn(req, res, next)).catch(next);
+  };
 
 export const parseDuration = (duration: string): number => {
     const match = duration.match(/^(\d+)([smhd])$/);

@@ -89,9 +89,9 @@ export const refresh = async (req: Request, res: Response) => {
     const { authorization } = req.headers
     const refreshToken = authorization?.split(' ')[1];
 
-    const refresh_token = await tokenService.refresh(refreshToken as string);
+    const accessToken = await tokenService.refresh(refreshToken as string);
 
-    switch (refresh_token) {
+    switch (accessToken) {
         case "token_not_found":
             res.status(403).json(createResponse(
                 false,
@@ -111,7 +111,10 @@ export const refresh = async (req: Request, res: Response) => {
         default:
             res.status(200).json(createResponse(
                 false,
-                null,
+                {
+                    refreshToken,
+                    accessToken
+                },
                 "Succesfully refresh token"
             ));
             break;

@@ -1,4 +1,5 @@
 import { generateToken, verifyToken } from "../middlewares/jwt";
+import { TokenError, } from "fast-jwt";
 import { parseDuration } from "../middlewares/utils";
 import { saveToken, deleteTokensByUserId, deleteToken, findToken } from "../models/tokenModels";
 import { fetchUserByUsername } from "../models/userModels";
@@ -10,8 +11,8 @@ export const login = async (username: string, password: string) => {
 
     if (user.password !== password) return "wrong_password";
 
-    const accessToken = generateToken(user.id, user.role);
-    const refreshToken = generateToken(user.id, user.role, true);
+    const accessToken = await generateToken(user.id, user.role);
+    const refreshToken = await generateToken(user.id, user.role, true);
 
     const accessTokenExpiry = process.env.JWT_EXPIRES_IN;
     const refreshTokenExpiry = process.env.JWT_REFRESH_EXPIRES_IN;
@@ -19,8 +20,7 @@ export const login = async (username: string, password: string) => {
     if (!accessTokenExpiry || !refreshTokenExpiry) throw 'Token expiration times not set'
 
     await deleteTokensByUserId(user.id); // Optionally clear old tokens
-    await saveToken(user.id, accessToken, false, new Date(Date.now() + parseDuration(accessTokenExpiry)));
-    await saveToken(user.id, refreshToken, true, new Date(Date.now() + parseDuration(refreshTokenExpiry)));
+    await saveToken(user.id, refreshToken, new Date(Date.now() + parseDuration(refreshTokenExpiry)));
 
     return {
         accessToken,
@@ -41,13 +41,17 @@ export const logout = async (refreshToken: string) => {
 export const refresh = async (refreshToken: string) => {
     const tokenRecord = await findToken(refreshToken);
 
-    if (!tokenRecord || !tokenRecord.isRefresh) return "token_was_not_found"
+    if (!tokenRecord) return "token_not_found"
 
     try {
-        const { userId, role } = verifyToken(refreshToken, true);
-        const newAccessToken = generateToken(userId, role);
+        await verifyToken(refreshToken, true);
+        const newAccessToken = await generateToken(tokenRecord.userId, tokenRecord.user.role);
         return newAccessToken;
-    } catch {
-        return "forbidden"
+    } catch (err) {
+        if (err instanceof TokenError && err.code == TokenError.codes.expired) {
+            return "Access Token is expired, do a refresh token"
+        }
+        return `Embuh mas. ${err as string}`
+
     }
 }
